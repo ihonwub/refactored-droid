@@ -23,6 +23,9 @@ rollout:
   strategy:
     canary:
       enabled: false  # Disable canary by default, can be overridden per environment
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
 # Common annotations applied to all environments
 commonAnnotations:
   team: carbon

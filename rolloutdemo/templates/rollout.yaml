@@ -57,7 +57,7 @@ spec:
       analysis:
         templates:
         - templateName: success-rate
-        clusterScope: true
+        clusterScope: false
         startingStep: 1
         args:
         - name: namespace
@@ -87,6 +87,10 @@ spec:
         - pause: {duration: 60s}
         - setWeight: 80
         - pause: {duration: 120s}
+  {{- else }}
+    rollingUpdate:
+      maxUnavailable: {{ .Values.rollout.strategy.rollingUpdate.maxUnavailable | default "25%" }}
+      maxSurge: {{ .Values.rollout.strategy.rollingUpdate.maxSurge | default "25%" }}
   {{- end }}
     successfulRunHistoryLimit: 2
     unsuccessfulRunHistoryLimit: 1
