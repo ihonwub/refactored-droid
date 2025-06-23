@@ -58,7 +58,7 @@ spec:
         templates:
         - templateName: success-rate
         clusterScope: true
-        startingStep: 2
+        startingStep: 1
         args:
         - name: namespace
           value: {{ .Release.Namespace }}
@@ -85,6 +85,8 @@ spec:
         - pause: {duration: 30s}
         - setWeight: 60
         - pause: {duration: 60s}
+        - setWeight: 80
+        - pause: {duration: 120s}
   {{- end }}
 
 
