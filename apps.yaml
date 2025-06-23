@@ -10,7 +10,7 @@ spec:
     namespace: openshift-gitops
   project: default
   source:
-    repoURL: https://github.com/ihonwub/refactored-robot.git
+    repoURL: https://github.com/ihonwub/refactored-droid.git
     targetRevision: main
     path: appsets  # <- where the ApplicationSet YAML lives
     directory:
