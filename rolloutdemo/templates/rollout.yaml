@@ -22,18 +22,18 @@ spec:
         - templateName: success-rate
           clusterScope: false
           startingStep: 1
-          args:
-          - name: namespace
-            value: rollout-qa #{{ .Release.Namespace }}
-          - name: route-name
-            value: {{ template "rolloutdemo.fullname" . }}-stable-{{ .Release.Namespace }}
-          - name: route-url
-            value: {{ include "rolloutdemo.activeRouteHost" . }}
-          - name: api-token
-            valueFrom:
-              secretKeyRef:
-                name: monitor-auth-secret
-                key: token
+        args:
+        - name: namespace
+          value: rollout-qa #{{ .Release.Namespace }}
+        - name: route-name
+          value: {{ template "rolloutdemo.fullname" . }}-stable-{{ .Release.Namespace }}
+        - name: route-url
+          value: {{ include "rolloutdemo.activeRouteHost" . }}
+        - name: api-token
+          valueFrom:
+            secretKeyRef:
+              name: monitor-auth-secret
+              key: token
       canaryService: {{ template "rolloutdemo.fullname" . }}-canary-{{ .Release.Namespace }}
       stableService: {{ template "rolloutdemo.fullname" . }}-stable-{{ .Release.Namespace }}
       trafficRouting:
