@@ -101,6 +101,9 @@ metadata:
     release: pac
     heritage: Helm
 spec:
+  analysis:
+    successfulRunHistoryLimit: 2
+    unsuccessfulRunHistoryLimit: 1
   replicas: 2
   revisionHistoryLimit: 5
   selector:
@@ -142,6 +145,7 @@ spec:
         - pause: {duration: 60s}
         - setWeight: 80
         - pause: {duration: 120s}
+  #
   template:
     metadata:
       labels:
@@ -171,8 +175,6 @@ spec:
             requests:
               cpu: 150m
               memory: 256Mi
-  successfulRunHistoryLimit: 2
-  unsuccessfulRunHistoryLimit: 1
 ---
 # Source: rolloutdemo/templates/routes.yaml
 apiVersion: route.openshift.io/v1
