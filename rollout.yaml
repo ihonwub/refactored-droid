@@ -136,8 +136,6 @@ spec:
             requests:
               cpu: 100m
               memory: 128Mi
-
-
     successfulRunHistoryLimit: 2
     unsuccessfulRunHistoryLimit: 1
 ---
