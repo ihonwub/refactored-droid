@@ -25,11 +25,11 @@ spec:
         insecure: true
         headers:
           - key: Authorization
-            value: "Bearer {{ `{{args.api-token}}` }}"
+            value: "Bearer {{`{{args.api-token}}`}}"
         query: |
           max(irate(haproxy_backend_http_responses_total{
-            exported_namespace="{{ `{{args.namespace}}` }}",
-            route=~"{{ `{{args.route-name}}` }}",
+            exported_namespace="{{`{{args.namespace}}`}}",
+            route=~"{{`{{args.route-name}}`}}",
             code="5xx"
           }[1m])) > 5 or on() vector(0)
   - name: run-load
@@ -44,4 +44,4 @@ spec:
               - name: siege
                 image: quay.io/gnunn/tools:latest
                 command: [sh, -c]
-                args: ["siege -c 20 -r 15 -d10 -v http://{{ `{{args.route-url}}` }}"]
+                args: ["siege -c 20 -r 15 -d10 -v http://{{`{{args.route-url}}`}}"]
