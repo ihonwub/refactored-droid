@@ -8,14 +8,17 @@ metadata:
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
 spec:
+  analysis:
+    successfulRunHistoryLimit: {{ .Values.rollout.successfulRunHistoryLimit | default 2 }}
+    unsuccessfulRunHistoryLimit: {{ .Values.rollout.unsuccessfulRunHistoryLimit | default 1 }}
   replicas: {{ .Values.replicaCount }}
   revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
   selector:
     matchLabels:
       app: {{ template "rolloutdemo.name" . }}
       release: {{ .Release.Name }}
-  strategy:
   {{- if .Values.rollout.strategy.canary.enabled }}
+  strategy:
     canary:
       analysis:
         templates:
@@ -50,11 +53,11 @@ spec:
         - pause: {duration: 60s}
         - setWeight: 80
         - pause: {duration: 120s}
-  {{- else }}
-    rollingUpdate:
-      maxUnavailable: {{ .Values.rollout.strategy.rollingUpdate.maxUnavailable | default "25%" }}
-      maxSurge: {{ .Values.rollout.strategy.rollingUpdate.maxSurge | default "25%" }}
-  {{- end }}
+  # {{- else }}
+  #   rollingUpdate:
+  #     maxUnavailable: {{ .Values.rollout.strategy.rollingUpdate.maxUnavailable | default "25%" }}
+  #     maxSurge: {{ .Values.rollout.strategy.rollingUpdate.maxSurge | default "25%" }}
+{{- end }}
   template:
     metadata:
       labels:
@@ -91,5 +94,3 @@ spec:
       tolerations:
 {{ toYaml . | indent 8 }}
       {{- end }}
-  successfulRunHistoryLimit: {{ .Values.rollout.successfulRunHistoryLimit | default 2 }}
-  unsuccessfulRunHistoryLimit: {{ .Values.rollout.unsuccessfulRunHistoryLimit | default 1 }}
