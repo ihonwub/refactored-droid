@@ -107,6 +107,41 @@ spec:
     matchLabels:
       app: rolloutdemo
       release: pac
+  strategy:
+    canary:
+      analysis:
+        templates:
+        - templateName: success-rate
+          clusterScope: false
+          startingStep: 1
+          args:
+          - name: namespace
+            value: qa
+          - name: route-name
+            value: pac-rolloutdemo-stable-qa
+          - name: route-url
+            value: pac-rolloutdemo-route-qa.apps.e3c5k7g5w3o7p7w.5vc5.p1.openshiftapps.com
+          - name: api-token
+            valueFrom:
+              secretKeyRef:
+                name: monitor-auth-secret
+                key: token
+      canaryService: pac-rolloutdemo-canary-qa
+      stableService: pac-rolloutdemo-stable-qa
+      trafficRouting:
+        plugins:
+          argoproj-labs/openshift:
+            routes:
+              - pac-rolloutdemo-stable-qa
+      steps:
+        - setWeight: 20
+        - pause: {duration: 10s}
+        - setWeight: 40
+        - pause: {duration: 30s}
+        - setWeight: 60
+        - pause: {duration: 60s}
+        - setWeight: 80
+        - pause: {duration: 120s}
   template:
     metadata:
       labels:
@@ -115,7 +150,7 @@ spec:
     spec:
       containers:
         - name: rolloutdemo
-          image: "ghcr.io/ihonwub/curly-spork:6ef5a712e7e281197f7652c62cc8be3437ed721b"
+          image: "ghcr.io/ihonwub/curly-spork:d4e6b3e1436640c0f46bad709c9b3a03ad930fab"
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
@@ -136,43 +171,8 @@ spec:
             requests:
               cpu: 150m
               memory: 256Mi
-  strategy:
-    canary:
-      analysis:
-        templates:
-        - templateName: success-rate
-        clusterScope: false
-        startingStep: 1
-        args:
-        - name: namespace
-          value: qa
-        - name: route-name
-          value: pac-rolloutdemo-stable-qa
-        - name: route-url
-          value: pac-rolloutdemo-route-qa.apps.e3c5k7g5w3o7p7w.5vc5.p1.openshiftapps.com
-        - name: api-token
-          valueFrom:
-            secretKeyRef:
-              name: monitor-auth-secret
-              key: token
-      canaryService: pac-rolloutdemo-canary-qa
-      stableService: pac-rolloutdemo-stable-qa
-      trafficRouting:
-        plugins:
-          argoproj-labs/openshift:
-            routes:
-              - pac-rolloutdemo-stable-qa
-      steps:
-        - setWeight: 20
-        - pause: {duration: 10s}
-        - setWeight: 40
-        - pause: {duration: 30s}
-        - setWeight: 60
-        - pause: {duration: 60s}
-        - setWeight: 80
-        - pause: {duration: 120s}
-    successfulRunHistoryLimit: 2
-    unsuccessfulRunHistoryLimit: 1
+  successfulRunHistoryLimit: 2
+  unsuccessfulRunHistoryLimit: 1
 ---
 # Source: rolloutdemo/templates/routes.yaml
 apiVersion: route.openshift.io/v1
