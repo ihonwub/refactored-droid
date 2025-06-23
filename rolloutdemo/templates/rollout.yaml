@@ -88,7 +88,5 @@ spec:
         - setWeight: 80
         - pause: {duration: 120s}
   {{- end }}
-
-
     successfulRunHistoryLimit: 2
     unsuccessfulRunHistoryLimit: 1

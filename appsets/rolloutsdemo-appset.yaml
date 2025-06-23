@@ -24,7 +24,7 @@ spec:
     spec:
       project: default
       source:
-        repoURL: https://github.com/ihonwub/refactored-robot.git
+        repoURL: https://github.com/ihonwub/refactored-droid.git
         targetRevision: '{{branch}}'
         path: .
       destination:
