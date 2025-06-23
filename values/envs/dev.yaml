@@ -1,0 +1,37 @@
+# values/envs/dev.yaml - Development environment overrides
+clusterDomain: apps.e3c5k7g5w3o7p7w.5vc5.p1.openshiftapps.com
+
+# Higher replica count for dev testing
+replicaCount: 2
+
+# Development-specific image settings
+image:
+  pullPolicy: Always  # Always pull latest in dev
+
+# Keep more revision history for debugging
+revisionHistoryLimit: 3
+
+# Development rollout strategy
+rollout:
+  strategy:
+    canary: false
+
+# Higher resource limits for dev testing
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+# # Development-specific annotations
+# commonAnnotations:
+#   team: carbon
+#   project: t3aPaC
+#   environment: dev
+
+# # Development-specific labels for pods
+# podLabels:
+#   environment: dev
+#   tier: development

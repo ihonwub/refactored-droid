@@ -1,0 +1,30 @@
+{{/* 
+  NOTES.txt is rendered and shown after a successful Helm install or upgrade.
+  This version is customized for OpenShift environments that use Route resources.
+*/}}
+
+1. Access your application routes in OpenShift:
+
+  {{/*
+    Set route name using the Helm release fullname helper.
+    Assumes the active Route is named "{{ fullname }}-route"
+    and the preview Route is named "{{ fullname }}-preview"
+  */}}
+
+  Active Route:
+    export ACTIVE_ROUTE=$(oc get route -n {{ .Release.Namespace }} {{ include "rolloutdemo.fullname" . }} -o jsonpath='{.spec.host}')
+    echo "http://$ACTIVE_ROUTE"
+
+  {{/*
+    Preview Route is typically used in BlueGreen deployments for pre-promotion testing.
+    Assumes the preview Route is named "{{ fullname }}-preview"
+  */}}
+
+  Preview Route:
+    export PREVIEW_ROUTE=$(oc get route -n {{ .Release.Namespace }} {{ include "rolloutdemo.fullname" . }}-preview -o jsonpath='{.spec.host}')
+    echo "http://$PREVIEW_ROUTE"
+
+  {{/*
+    These commands retrieve the external hostnames for the Route resources and output the full URLs.
+    Ensure the Routes exist and your rollout strategy is configured to create both.
+  */}}

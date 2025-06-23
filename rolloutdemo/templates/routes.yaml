@@ -1,0 +1,41 @@
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  annotations:
+    haproxy.router.openshift.io/disable_cookies: 'true'
+    haproxy.router.openshift.io/balance: roundrobin
+  name: {{ template "rolloutdemo.fullname" . }}-stable-{{ .Release.Namespace }}
+  labels:
+    app: {{ template "rolloutdemo.name" . }}
+spec:
+  to:
+    kind: Service
+    name: {{ template "rolloutdemo.fullname" . }}-stable-{{ .Release.Namespace }}
+  port:
+    targetPort: http
+  host: {{ include "rolloutdemo.activeRouteHost" . }}
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  alternateBackends:
+    - kind: Service
+      name: canary
+      weight: 0
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: {{ template "rolloutdemo.fullname" . }}-canary-{{ .Release.Namespace }}
+  labels:
+    app: {{ template "rolloutdemo.name" . }}
+spec:
+  to:
+    kind: Service
+    name: {{ template "rolloutdemo.fullname" . }}-canary-{{ .Release.Namespace }}
+  port:
+    targetPort: http
+  host: {{ include "rolloutdemo.previewRouteHost" . }}
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
