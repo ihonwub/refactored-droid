@@ -1,0 +1,185 @@
+---
+# Source: rolloutdemo/templates/services.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: pac-rolloutdemo-stable-dev
+  labels:
+    app: rolloutdemo
+    chart: rolloutdemo-0.1.0
+    release: pac
+    heritage: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: rolloutdemo
+    release: pac
+---
+# Source: rolloutdemo/templates/services.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: pac-rolloutdemo-canary-dev
+  labels:
+    app: rolloutdemo
+    chart: rolloutdemo-0.1.0
+    release: pac
+    heritage: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: rolloutdemo
+    release: pac
+---
+# Source: rolloutdemo/templates/analysis-template.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: ClusterAnalysisTemplate
+metadata:
+  name: success-rate
+spec:
+  args:
+  - name: namespace
+  - name: route-name
+  - name: route-url
+  - name: api-token
+    valueFrom:
+      secretKeyRef:
+        name: monitor-auth-secret
+        key: token
+  metrics:
+  - name: success-rate
+    interval: 30s
+    count: 4
+    successCondition: result[0] == 0
+    failureLimit: 0
+    provider:
+      prometheus:
+        address: https://thanos-querier.openshift-monitoring.svc.cluster.local:9091
+        timeout: 40
+        insecure: true
+        headers:
+          - key: Authorization
+            value: "Bearer {{args.api-token}}"
+        query: |
+          max(irate(haproxy_backend_http_responses_total{
+            exported_namespace="{{args.namespace}}",
+            route=~"{{args.route-name}}",
+            code="5xx"
+          }[1m])) > 5 or on() vector(0)
+  - name: run-load
+    provider:
+      job:
+        spec:
+          backoffLimit: 1
+          template:
+            spec:
+              restartPolicy: Never
+              containers:
+              - name: siege
+                image: quay.io/gnunn/tools:latest
+                command: [sh, -c]
+                args: ["siege -c 20 -r 15 -d10 -v http://{{args.route-url}}"]
+---
+# Source: rolloutdemo/templates/rollout.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: pac-rolloutdemo
+  labels:
+    app: rolloutdemo
+    chart: rolloutdemo-0.1.0
+    release: pac
+    heritage: Helm
+spec:
+  replicas: 2
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: rolloutdemo
+      release: pac
+  template:
+    metadata:
+      labels:
+        app: rolloutdemo
+        release: pac
+    spec:
+      containers:
+        - name: rolloutdemo
+          image: "ghcr.io/ihonwub/curly-spork:6ef5a712e7e281197f7652c62cc8be3437ed721b"
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+          resources:
+            limits:
+              cpu: 200m
+              memory: 256Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+
+
+    successfulRunHistoryLimit: 2
+    unsuccessfulRunHistoryLimit: 1
+---
+# Source: rolloutdemo/templates/routes.yaml
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  annotations:
+    haproxy.router.openshift.io/disable_cookies: 'true'
+    haproxy.router.openshift.io/balance: roundrobin
+  name: pac-rolloutdemo-stable-dev
+  labels:
+    app: rolloutdemo
+spec:
+  to:
+    kind: Service
+    name: pac-rolloutdemo-stable-dev
+  port:
+    targetPort: http
+  host: pac-rolloutdemo-route-dev.apps.e3c5k7g5w3o7p7w.5vc5.p1.openshiftapps.com
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  alternateBackends:
+    - kind: Service
+      name: canary
+      weight: 0
+---
+# Source: rolloutdemo/templates/routes.yaml
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: pac-rolloutdemo-canary-dev
+  labels:
+    app: rolloutdemo
+spec:
+  to:
+    kind: Service
+    name: pac-rolloutdemo-canary-dev
+  port:
+    targetPort: http
+  host: pac-rolloutdemo-preview-route-dev.apps.e3c5k7g5w3o7p7w.5vc5.p1.openshiftapps.com
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
