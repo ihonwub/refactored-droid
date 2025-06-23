@@ -51,7 +51,7 @@ spec:
 {{ toYaml . | indent 8 }}
       {{- end }}
 
-  {{- if .Values.rollout.strategy.canary.true }}
+  {{- if .Values.rollout.strategy.canary.enabled }}
   strategy:
     canary:
       analysis:
