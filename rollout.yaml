@@ -107,6 +107,10 @@ spec:
     matchLabels:
       app: rolloutdemo
       release: pac
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
   template:
     metadata:
       labels:
@@ -115,7 +119,7 @@ spec:
     spec:
       containers:
         - name: rolloutdemo
-          image: "ghcr.io/ihonwub/curly-spork:6ef5a712e7e281197f7652c62cc8be3437ed721b"
+          image: "ghcr.io/ihonwub/curly-spork:d4e6b3e1436640c0f46bad709c9b3a03ad930fab"
           imagePullPolicy: Always
           ports:
             - name: http
@@ -136,11 +140,8 @@ spec:
             requests:
               cpu: 100m
               memory: 128Mi
-    rollingUpdate:
-      maxUnavailable: 25%
-      maxSurge: 25%
-    successfulRunHistoryLimit: 2
-    unsuccessfulRunHistoryLimit: 1
+  successfulRunHistoryLimit: 2
+  unsuccessfulRunHistoryLimit: 1
 ---
 # Source: rolloutdemo/templates/routes.yaml
 apiVersion: route.openshift.io/v1
