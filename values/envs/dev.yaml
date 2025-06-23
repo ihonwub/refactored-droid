@@ -14,7 +14,8 @@ revisionHistoryLimit: 3
 # Development rollout strategy
 rollout:
   strategy:
-    canary: false
+    canary:
+      enabled: false  # No canary in dev, use full deployments
 
 # Higher resource limits for dev testing
 resources:

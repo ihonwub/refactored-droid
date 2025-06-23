@@ -15,7 +15,8 @@ revisionHistoryLimit: 5
 # QA rollout strategy - automated but with validation
 rollout:
   strategy:
-    canary: true
+    canary:
+      enabled: true # Enable canary for QA
 
 # Production-like resource allocation
 resources:

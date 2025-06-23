@@ -21,7 +21,8 @@ revisionHistoryLimit: 1
 # Default rollout strategy
 rollout:
   strategy:
-    canary: true
+    canary:
+      enabled: false  # Disable canary by default, can be overridden per environment
 # Common annotations applied to all environments
 commonAnnotations:
   team: carbon
