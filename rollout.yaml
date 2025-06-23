@@ -43,7 +43,7 @@ spec:
 ---
 # Source: rolloutdemo/templates/analysis-template.yaml
 apiVersion: argoproj.io/v1alpha1
-kind: ClusterAnalysisTemplate
+kind: AnalysisTemplate
 metadata:
   name: success-rate
 spec:
@@ -136,6 +136,9 @@ spec:
             requests:
               cpu: 100m
               memory: 128Mi
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
     successfulRunHistoryLimit: 2
     unsuccessfulRunHistoryLimit: 1
 ---
