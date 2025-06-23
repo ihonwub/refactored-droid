@@ -14,6 +14,47 @@ spec:
     matchLabels:
       app: {{ template "rolloutdemo.name" . }}
       release: {{ .Release.Name }}
+  strategy:
+  {{- if .Values.rollout.strategy.canary.enabled }}
+    canary:
+      analysis:
+        templates:
+        - templateName: success-rate
+          clusterScope: false
+          startingStep: 1
+          args:
+          - name: namespace
+            value: {{ .Release.Namespace }}
+          - name: route-name
+            value: {{ template "rolloutdemo.fullname" . }}-stable-{{ .Release.Namespace }}
+          - name: route-url
+            value: {{ include "rolloutdemo.activeRouteHost" . }}
+          - name: api-token
+            valueFrom:
+              secretKeyRef:
+                name: monitor-auth-secret
+                key: token
+      canaryService: {{ template "rolloutdemo.fullname" . }}-canary-{{ .Release.Namespace }}
+      stableService: {{ template "rolloutdemo.fullname" . }}-stable-{{ .Release.Namespace }}
+      trafficRouting:
+        plugins:
+          argoproj-labs/openshift:
+            routes:
+              - {{ template "rolloutdemo.fullname" . }}-stable-{{ .Release.Namespace }}
+      steps:
+        - setWeight: 20
+        - pause: {duration: 10s}
+        - setWeight: 40
+        - pause: {duration: 30s}
+        - setWeight: 60
+        - pause: {duration: 60s}
+        - setWeight: 80
+        - pause: {duration: 120s}
+  {{- else }}
+    rollingUpdate:
+      maxUnavailable: {{ .Values.rollout.strategy.rollingUpdate.maxUnavailable | default "25%" }}
+      maxSurge: {{ .Values.rollout.strategy.rollingUpdate.maxSurge | default "25%" }}
+  {{- end }}
   template:
     metadata:
       labels:
@@ -50,47 +91,5 @@ spec:
       tolerations:
 {{ toYaml . | indent 8 }}
       {{- end }}
-
-  {{- if .Values.rollout.strategy.canary.enabled }}
-  strategy:
-    canary:
-      analysis:
-        templates:
-        - templateName: success-rate
-        clusterScope: false
-        startingStep: 1
-        args:
-        - name: namespace
-          value: {{ .Release.Namespace }}
-        - name: route-name
-          value: {{ template "rolloutdemo.fullname" . }}-stable-{{ .Release.Namespace }}
-        - name: route-url
-          value: {{ include "rolloutdemo.activeRouteHost" . }}
-        - name: api-token
-          valueFrom:
-            secretKeyRef:
-              name: monitor-auth-secret
-              key: token
-      canaryService: {{ template "rolloutdemo.fullname" . }}-canary-{{ .Release.Namespace }}
-      stableService: {{ template "rolloutdemo.fullname" . }}-stable-{{ .Release.Namespace }}
-      trafficRouting:
-        plugins:
-          argoproj-labs/openshift:
-            routes:
-              - {{ template "rolloutdemo.fullname" . }}-stable-{{ .Release.Namespace }}
-      steps:
-        - setWeight: 20
-        - pause: {duration: 10s}
-        - setWeight: 40
-        - pause: {duration: 30s}
-        - setWeight: 60
-        - pause: {duration: 60s}
-        - setWeight: 80
-        - pause: {duration: 120s}
-  {{- else }}
-    rollingUpdate:
-      maxUnavailable: {{ .Values.rollout.strategy.rollingUpdate.maxUnavailable | default "25%" }}
-      maxSurge: {{ .Values.rollout.strategy.rollingUpdate.maxSurge | default "25%" }}
-  {{- end }}
-    successfulRunHistoryLimit: 2
-    unsuccessfulRunHistoryLimit: 1
+  successfulRunHistoryLimit: {{ .Values.rollout.successfulRunHistoryLimit | default 2 }}
+  unsuccessfulRunHistoryLimit: {{ .Values.rollout.unsuccessfulRunHistoryLimit | default 1 }}
