@@ -114,18 +114,18 @@ spec:
         - templateName: success-rate
           clusterScope: false
           startingStep: 1
-          args:
-          - name: namespace
-            value: rollout-qa #qa
-          - name: route-name
-            value: pac-rolloutdemo-stable-qa
-          - name: route-url
-            value: pac-rolloutdemo-route-qa.apps.e3c5k7g5w3o7p7w.5vc5.p1.openshiftapps.com
-          - name: api-token
-            valueFrom:
-              secretKeyRef:
-                name: monitor-auth-secret
-                key: token
+        args:
+        - name: namespace
+          value: rollout-qa #qa
+        - name: route-name
+          value: pac-rolloutdemo-stable-qa
+        - name: route-url
+          value: pac-rolloutdemo-route-qa.apps.e3c5k7g5w3o7p7w.5vc5.p1.openshiftapps.com
+        - name: api-token
+          valueFrom:
+            secretKeyRef:
+              name: monitor-auth-secret
+              key: token
       canaryService: pac-rolloutdemo-canary-qa
       stableService: pac-rolloutdemo-stable-qa
       trafficRouting:
