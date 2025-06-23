@@ -171,8 +171,6 @@ spec:
         - pause: {duration: 60s}
         - setWeight: 80
         - pause: {duration: 120s}
-
-
     successfulRunHistoryLimit: 2
     unsuccessfulRunHistoryLimit: 1
 ---
