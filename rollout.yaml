@@ -116,7 +116,7 @@ spec:
           startingStep: 1
           args:
           - name: namespace
-            value: qa
+            value: rollout-qa #qa
           - name: route-name
             value: pac-rolloutdemo-stable-qa
           - name: route-url
